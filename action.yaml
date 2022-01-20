@@ -24,7 +24,7 @@ inputs:
         required: true
     delete-branch-after-merge:
         description: 'Should the target branch be deleted after successful merge? yes|no'
-        required: true
+        required: false
         default: no
 outputs:
     random-number:
