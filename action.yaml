@@ -47,6 +47,8 @@ runs:
           shell: bash
           env:
               GITHUB_TOKEN=${{ inputs.github-token }}
+          run: echo "GITHUB_TOKEN=${{ inputs.github-token }}" >> $GITHUB_ENV
+          
         - name: 'Create the Pull Request'
           id: open-pull-request
           shell: bash
