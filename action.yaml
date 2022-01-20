@@ -1,0 +1,89 @@
+name: 'Create Autoupdate PR'
+description: 'Creates an automerge PR'
+inputs:
+    repo-owner:  # owner of the repo
+        description: 'Owner/namespace of the target repository'
+        required: false
+        default: ${{ github.repository_owner }}
+    repo-name:
+        description: 'Target repository name'
+        required: false
+        default: ${{ github.repository }}
+    github-token:
+        description: 'Github token to the repository so we can work with the github api. Typically GITHUB_TOKEN'
+        required: true
+    trigger-source:
+        description: 'Which thing triggered this PR creation'
+        required: true
+    target-branch:
+        description: 'The branch we want to merge'
+        required: false
+        default: ${GITHUB_REF##*/}
+    default-branch:
+        description: 'Default branch for this repository'
+        required: true
+    delete-branch-after-merge:
+        description: 'Should the target branch be deleted after successful merge? yes|no'
+        required: true
+        default: no
+outputs:
+    random-number:
+        description: "Random number"
+        value: ${{ steps.random-number-generator.outputs.random-id }}
+
+
+# Things we need to do
+# 1. Check if a PR already exists for this branch - do we really need to? if we create one and it already exists for the
+# branch, it'll error
+# 1a. if so, bail (or maybe not, see above)
+# 2. Open the pull request
+# 3. Set the PR to auto merge after checks have passed
+# 4. Send the output to slack? Or should that be a separate action?
+runs:
+    using: "composite"
+    steps:
+        - name: 'Set up Github token'
+          id: setup-gh-token
+          shell: bash
+          env:
+              GITHUB_TOKEN=${{ inputs.github-token }}
+        - name: 'Create the Pull Request'
+          id: open-pull-request
+          shell: bash
+          run: |
+              TITLE="Automerge Pull Request via automated update from ${{ inputs.trigger-source }}"
+              BODY="Scheduled updates from ${{ inputs.trigger-source }}"
+              # If successful, the cli will return the URL to the created PR.
+              response=$(gh pr create --head "${{ inputs.target-branch }}" --base "${{ inputs.default-branch }}" --title "$TITLE" --body "$BODY" --repo ${{ inputs.template-owner }}/${{ inputs.repo-name }})
+              # If the CLI returns 1, the step will fail.
+              boolPRCreated=$?
+              prRegex="([0-9]+$)"
+              if [[ -n "${response}" && $response =~ $prRegex ]]; then
+                PR=${BASH_REMATCH[1]}
+                echo "::set-output name=pull-request-link::$response"
+                echo "::set-output name=pull-request-number::$PR"
+              elif (( 0 == boolPRCreated )); then
+                echo "::error::cli didn't fail but response is empty or didnt match the regex?"
+                echo "::error::${response}"
+              else
+                echo "::error::PR creation failed. Possibly a PR already exists?"
+                echo "::error::Output from PR creation attempt: ${response}"
+                exit 1
+              fi
+        - name: "Automerge PR on successful checks"
+          id: automerge-pr
+          shell: bash
+          if: ${{ success() }}
+          run: |
+              # I dont like this, but we delete-branch-after-merge always has a value and we need a var that exists only if needed
+              if [[ "yes" == ${{ inputs.delete-branch-after-merge }} ]]; then
+                deleteBranch="yep"
+              fi
+              gh pr merge ${{ steps.open-pull-request.outputs.pull-request-number }} --auto --merge --repo=${{ inputs.repo-owner }}/${{ inputs.repo-name }} ${deleteBranch+'--delete-branch'}
+              lastcommand=$?
+              if (( 0 != lastcommand )); then
+                echo "::error::Accepting the merge request failed."
+                exit 1
+              else
+                echo "The PR has been set to merge as soon as the required checks have completed."
+              fi
