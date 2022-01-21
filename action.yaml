@@ -18,7 +18,7 @@ inputs:
     merge-branch:
         description: 'The branch we want to merge'
         required: false
-        default: ${GITHUB_REF##*/}
+        default: ${( GITHUB_REF##*/ }}
     default-branch:
         description: 'Default branch for this repository'
         required: true
@@ -42,6 +42,12 @@ outputs:
 runs:
     using: "composite"
     steps:
+        - name: 'I with github was as good as gitlab'
+          id: output-stuff
+          shell: bash
+          run: |
+            printf "what is the GITHUB_REF value that we tried to use previously: %s\n" "${GITHUB_REF}"
+            printf "ok, what about the way we wanted to use it? %s \n" "${GITHUB_REF##*/}"
         - name: 'Set up Github token'
           id: setup-gh-token
           shell: bash
