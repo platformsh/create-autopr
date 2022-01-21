@@ -8,14 +8,14 @@ inputs:
     repo-name:
         description: 'Target repository name'
         required: false
-        default: ${{ github.repository }}
+        default: ${{ github.event.repository.name }}
     github-token:
         description: 'Github token to the repository so we can work with the github api. Typically GITHUB_TOKEN'
         required: true
     trigger-source:
         description: 'Which thing triggered this PR creation'
         required: true
-    target-branch:
+    merge-branch:
         description: 'The branch we want to merge'
         required: false
         default: ${GITHUB_REF##*/}
