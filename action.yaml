@@ -18,7 +18,7 @@ inputs:
     merge-branch:
         description: 'The branch we want to merge'
         required: false
-        default: ${{ GITHUB_REF##*/ }}
+        default: ''
     default-branch:
         description: 'Default branch for this repository'
         required: true
@@ -42,12 +42,18 @@ outputs:
 runs:
     using: "composite"
     steps:
-        - name: 'I with github was as good as gitlab'
+        - name: 'I wish github was as good as gitlab'
           id: output-stuff
           shell: bash
           run: |
-            printf "what is the GITHUB_REF value that we tried to use previously: %s\n" "${GITHUB_REF}"
-            printf "ok, what about the way we wanted to use it? %s \n" "${GITHUB_REF##*/}"
+            printf "so is our default an empty string or did it give us two double quotes? %s\n" "${{ inputs.merge-branch }}"
+            if [[ "" == "${{ inputs.merge-branch }}" ]]; then
+                mergeBranch="${GITHUB_REF##*/}"
+            else
+                mergeBranch="${{ inputs.merge-branch }}"
+            fi
+            printf "We are going to set the merge branch to: %s\n" "${mergeBranch}"
+            echo "MERGE_BRANCH=${mergeBranch}" >> $GITHUB_ENV
         - name: 'Set up Github token'
           id: setup-gh-token
           shell: bash
@@ -60,7 +66,7 @@ runs:
               TITLE="Automerge Pull Request via automated update from ${{ inputs.trigger-source }}"
               BODY="Scheduled updates from ${{ inputs.trigger-source }}"
               # If successful, the cli will return the URL to the created PR.
-              response=$(gh pr create --head "${{ inputs.merge-branch }}" --base "${{ inputs.default-branch }}" --title "$TITLE" --body "$BODY" --repo ${{ inputs.repo-owner }}/${{ inputs.repo-name }})
+              response=$(gh pr create --head "${{ env.MERGE_BRANCH }}" --base "${{ inputs.default-branch }}" --title "$TITLE" --body "$BODY" --repo ${{ inputs.repo-owner }}/${{ inputs.repo-name }})
               # If the CLI returns 1, the step will fail.
               boolPRCreated=$?
               prRegex="([0-9]+$)"
