@@ -54,7 +54,7 @@ runs:
               TITLE="Automerge Pull Request via automated update from ${{ inputs.trigger-source }}"
               BODY="Scheduled updates from ${{ inputs.trigger-source }}"
               # If successful, the cli will return the URL to the created PR.
-              response=$(gh pr create --head "${{ inputs.target-branch }}" --base "${{ inputs.default-branch }}" --title "$TITLE" --body "$BODY" --repo ${{ inputs.template-owner }}/${{ inputs.repo-name }})
+              response=$(gh pr create --head "${{ inputs.merge-branch }}" --base "${{ inputs.default-branch }}" --title "$TITLE" --body "$BODY" --repo ${{ inputs.template-owner }}/${{ inputs.repo-name }})
               # If the CLI returns 1, the step will fail.
               boolPRCreated=$?
               prRegex="([0-9]+$)"
