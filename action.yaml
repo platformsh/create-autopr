@@ -26,11 +26,6 @@ inputs:
         description: 'Should the target branch be deleted after successful merge? yes|no'
         required: false
         default: no
-outputs:
-    random-number:
-        description: "Random number"
-        value: ${{ steps.random-number-generator.outputs.random-id }}
-
 
 # Things we need to do
 # 1. Check if a PR already exists for this branch - do we really need to? if we create one and it already exists for the
