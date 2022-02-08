@@ -1,5 +1,5 @@
 # Create Auto-Merge Pull Request
-If your github repository is set up to support auto-merging of pull requests, this action will create a pull request 
+If your GitHub repository is set up to support auto-merging of pull requests, this GitHub Action will create a pull request 
 and then set the pull request to auto-merge after all checks have completed successfully. 
 
 ## Inputs
