@@ -37,11 +37,10 @@ inputs:
 runs:
     using: "composite"
     steps:
-        - name: 'I wish github was as good as gitlab'
-          id: output-stuff
+        - name: 'Determine branch to be merged'
+          id: determine-merge-branch
           shell: bash
           run: |
-            printf "so is our default an empty string or did it give us two double quotes? %s\n" "${{ inputs.merge-branch }}"
             if [[ "" == "${{ inputs.merge-branch }}" ]]; then
                 mergeBranch="${GITHUB_REF##*/}"
             else
