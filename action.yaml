@@ -68,8 +68,8 @@ runs:
               prRegex="([0-9]+$)"
               if [[ -n "${response}" && $response =~ $prRegex ]]; then
                 PR=${BASH_REMATCH[1]}
-                echo "::set-output name=pull-request-link::$response"
-                echo "::set-output name=pull-request-number::$PR"
+                echo "pull-request-link=${response}" >> >> $GITHUB_OUTPUT
+                echo "pull-request-number=${PR}" >> $GITHUB_OUTPUT
               elif (( 0 == boolPRCreated )); then
                 echo "::error::cli didn't fail but response is empty or didnt match the regex?"
                 echo "::error::${response}"
