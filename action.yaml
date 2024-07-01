@@ -54,7 +54,7 @@ runs:
           run: echo "GITHUB_TOKEN=${{ inputs.github-token }}" >> $GITHUB_ENV
         # See https://github.com/cli/cli/issues/5075
         - name: Get the Repo
-          uses: actions/checkout@v2
+          uses: actions/checkout@v4
         - name: 'Create the Pull Request'
           id: open-pull-request
           shell: bash
